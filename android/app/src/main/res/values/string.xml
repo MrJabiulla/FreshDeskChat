@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">chat_bot</string>
+    <string name="freshchat_file_provider_authority">com.freshdesk.chatbot</string>
+</resources>

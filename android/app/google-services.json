@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "955378176663",
+    "project_id": "freshchatbot-db11d",
+    "storage_bucket": "freshchatbot-db11d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:955378176663:android:f9325c9d33a4dfd4e7cfd2",
+        "android_client_info": {
+          "package_name": "com.freshdesk.chatbot"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0Y6QSPoJ6O_96lCuPUSenazgnsi5zLmI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
