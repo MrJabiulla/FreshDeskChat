@@ -8,10 +8,12 @@ import '../viewmodel/converstion_viewmodel.dart';
 
 class ChatScreen extends StatefulWidget {
   final UserModel user;
-  final String chennelID;
+  final String channelID;
+
   const ChatScreen({
     Key? key,
-    required this.user, required this.chennelID,
+    required this.user,
+    required this.channelID,
   }) : super(key: key);
 
   @override
@@ -19,6 +21,7 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  // Controllers
   final ConversationsController convController = Get.find<ConversationsController>();
   final TextEditingController msgController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -29,6 +32,14 @@ class _ChatScreenState extends State<ChatScreen> {
     _initConversation();
   }
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    msgController.dispose();
+    super.dispose();
+  }
+
+  // Initialization Methods
   Future<void> _initConversation() async {
     final savedId = await SharedPrefsHelper.getConversationId();
 
@@ -55,7 +66,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  // Pull-to-refresh handler
+  // Message Handling Methods
   Future<void> _refreshMessages() async {
     if (convController.currentConversationId != null) {
       await convController.getMessages(convController.currentConversationId!);
@@ -83,7 +94,7 @@ class _ChatScreenState extends State<ChatScreen> {
       messageParts: [
         MessagePartParams(text: TextContent(content: messageText))
       ],
-      channelId: widget.chennelID,
+      channelId: widget.channelID,
       messageType: "normal",
       actorType: "user",
       actorId: widget.user.id ?? "unknown_user",
@@ -92,7 +103,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final conversationParams = ConversationRequestParams(
       status: "new",
       messages: [message],
-      channelId: widget.chennelID,
+      channelId: widget.channelID,
       properties: PropertiesParams(
         priority: "Low",
         cfType: "General Query",
@@ -102,19 +113,17 @@ class _ChatScreenState extends State<ChatScreen> {
       users: [UserParams(id: widget.user.id ?? "unknown_user")],
     );
 
-    // Actually call the controller method to create the conversation
+    // Create the conversation
     convController.createConversation(conversationParams.toJson()).then((_) {
       print("Conversation created successfully");
-      // Optionally refresh messages after creation
-      // _refreshMessages();
     }).catchError((error) {
       print("Failed to create conversation: $error");
-      // Optionally remove the optimistic message on failure
     });
 
     print("Creating new conversation: $conversationParams");
   }
 
+  // UI Helper Methods
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
@@ -127,6 +136,40 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  String _getConversationDisplayId() {
+    return convController.currentConversationId?.substring(0, 8) ?? 'New';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Chat with Human"),
+        backgroundColor: Colors.blue[600],
+        foregroundColor: Colors.white,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Center(
+              child: Text(
+                "ID: ${_getConversationDisplayId()}...",
+                style: const TextStyle(fontSize: 12),
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Expanded(child: _buildMessagesBody()),
+          _buildLoadingIndicator(),
+          _buildMessageInput(),
+        ],
+      ),
+    );
+  }
+
+  // Widget Building Methods
   Widget _buildMessageBubble(dynamic message, bool isUser) {
     final messageText = message.messageParts.isNotEmpty
         ? message.messageParts[0].text.content
@@ -145,12 +188,18 @@ class _ChatScreenState extends State<ChatScreen> {
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(12),
             topRight: const Radius.circular(12),
-            bottomLeft: isUser ? const Radius.circular(12) : const Radius.circular(4),
-            bottomRight: isUser ? const Radius.circular(4) : const Radius.circular(12),
+            bottomLeft: isUser
+                ? const Radius.circular(12)
+                : const Radius.circular(4),
+            bottomRight: isUser
+                ? const Radius.circular(4)
+                : const Radius.circular(12),
           ),
         ),
         child: Column(
-          crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment: isUser
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start,
           children: [
             Text(
               messageText,
@@ -174,167 +223,35 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Chat with Human"),
-        backgroundColor: Colors.blue[600],
-        foregroundColor: Colors.white,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Center(
-              child: Text(
-                "ID: ${convController.currentConversationId?.substring(0, 8) ?? 'New'}...",
-                style: const TextStyle(fontSize: 12),
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: GetBuilder<ConversationsController>(
-              builder: (_) {
-                if (convController.messagesList.isNotEmpty) {
-                  _scrollToBottom();
-                }
-
-                if (convController.isLoading && convController.messagesList.isEmpty) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (convController.messagesList.isEmpty) {
-                  return RefreshIndicator(
-                    onRefresh: _refreshMessages,
-                    child: ListView(
-                      children: const [
-                        SizedBox(height: 200),
-                        Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey),
-                              SizedBox(height: 16),
-                              Text(
-                                "No messages yet",
-                                style: TextStyle(fontSize: 18, color: Colors.grey),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                "Start a conversation by sending a message",
-                                style: TextStyle(fontSize: 14, color: Colors.grey),
-                              ),
-                              SizedBox(height: 16),
-                              Text(
-                                "Pull down to refresh",
-                                style: TextStyle(fontSize: 12, color: Colors.grey),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                return RefreshIndicator(
-                  onRefresh: _refreshMessages,
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    itemCount: convController.messagesList.length,
-                    itemBuilder: (context, index) {
-                      final message = convController.messagesList[index];
-                      final isUser = message.actorType == "user";
-                      return _buildMessageBubble(message, isUser);
-                    },
-                  ),
-                );
-              },
-            ),
-          ),
-          // Loading indicator when sending
-          GetBuilder<ConversationsController>(
-            builder: (_) {
-              if (convController.isSending) {
-                return Container(
-                  padding: const EdgeInsets.all(8),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                      SizedBox(width: 8),
-                      Text("Sending...", style: TextStyle(color: Colors.grey)),
-                    ],
-                  ),
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
-          // Message input
-          Container(
-            padding: const EdgeInsets.all(8.0),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.2),
-                  spreadRadius: 1,
-                  blurRadius: 3,
-                  offset: const Offset(0, -1),
-                ),
-              ],
-            ),
-            child: Row(
+  Widget _buildEmptyMessageView() {
+    return RefreshIndicator(
+      onRefresh: _refreshMessages,
+      child: ListView(
+        children: const [
+          SizedBox(height: 200),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: msgController,
-                    decoration: InputDecoration(
-                      hintText: "Type your message...",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide(color: Colors.blue.shade300),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      filled: true,
-                      fillColor: Colors.grey.shade50,
-                    ),
-                    maxLines: null,
-                    textCapitalization: TextCapitalization.sentences,
-                    onSubmitted: (_) => sendMessage(),
-                  ),
+                Icon(
+                  Icons.chat_bubble_outline,
+                  size: 64,
+                  color: Colors.grey,
                 ),
-                const SizedBox(width: 8),
-                GetBuilder<ConversationsController>(
-                  builder: (_) {
-                    return FloatingActionButton(
-                      onPressed: convController.isSending ? null : sendMessage,
-                      mini: true,
-                      backgroundColor: convController.isSending
-                          ? Colors.grey.shade300
-                          : Colors.blue[600],
-                      child: Icon(
-                        Icons.send,
-                        color: convController.isSending
-                            ? Colors.grey.shade500
-                            : Colors.white,
-                        size: 20,
-                      ),
-                    );
-                  },
+                SizedBox(height: 16),
+                Text(
+                  "No messages yet",
+                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  "Start a conversation by sending a message",
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+                SizedBox(height: 16),
+                Text(
+                  "Pull down to refresh",
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
             ),
@@ -344,12 +261,136 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  @override
-  void dispose() {
-    // No more polling to stop
-    _scrollController.dispose();
-    msgController.dispose();
-    super.dispose();
+  Widget _buildMessagesList() {
+    return RefreshIndicator(
+      onRefresh: _refreshMessages,
+      child: ListView.builder(
+        controller: _scrollController,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        itemCount: convController.messagesList.length,
+        itemBuilder: (context, index) {
+          final message = convController.messagesList[index];
+          final isUser = message.actorType == "user";
+          return _buildMessageBubble(message, isUser);
+        },
+      ),
+    );
+  }
+
+  Widget _buildLoadingIndicator() {
+    return GetBuilder<ConversationsController>(
+      builder: (_) {
+        if (convController.isSending) {
+          return Container(
+            padding: const EdgeInsets.all(8),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                SizedBox(width: 8),
+                Text(
+                  "Sending...",
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ],
+            ),
+          );
+        }
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
+  Widget _buildMessageInput() {
+    return Container(
+      padding: const EdgeInsets.all(8.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: const Offset(0, -1),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: msgController,
+              decoration: InputDecoration(
+                hintText: "Type your message...",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  borderSide: BorderSide(color: Colors.blue.shade300),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                filled: true,
+                fillColor: Colors.grey.shade50,
+              ),
+              maxLines: null,
+              textCapitalization: TextCapitalization.sentences,
+              onSubmitted: (_) => sendMessage(),
+            ),
+          ),
+          const SizedBox(width: 8),
+          _buildSendButton(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSendButton() {
+    return GetBuilder<ConversationsController>(
+      builder: (_) {
+        return FloatingActionButton(
+          onPressed: convController.isSending ? null : sendMessage,
+          mini: true,
+          backgroundColor: convController.isSending
+              ? Colors.grey.shade300
+              : Colors.blue[600],
+          child: Icon(
+            Icons.send,
+            color: convController.isSending
+                ? Colors.grey.shade500
+                : Colors.white,
+            size: 20,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMessagesBody() {
+    return GetBuilder<ConversationsController>(
+      builder: (_) {
+        if (convController.messagesList.isNotEmpty) {
+          _scrollToBottom();
+        }
+
+        if (convController.isLoading && convController.messagesList.isEmpty) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (convController.messagesList.isEmpty) {
+          return _buildEmptyMessageView();
+        }
+
+        return _buildMessagesList();
+      },
+    );
   }
 }
-
