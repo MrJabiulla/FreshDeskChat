@@ -1,4 +1,4 @@
-# chat_bot
+# FrehDesk Chat
 
 A new Flutter project.
 
