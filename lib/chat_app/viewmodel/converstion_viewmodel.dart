@@ -19,7 +19,7 @@ class ConversationsController extends GetxController {
   ConversationResponse? _currentConversation;
   ConversationResponse? get currentConversation => _currentConversation;
 
-  Future<void> createConversation(Map<String, dynamic> conversationData) async {
+  Future<void> createConversation(Map<String, dynamic> conversationData, userID) async {
     try {
       isSending = true;
       _safeUpdate();
@@ -40,14 +40,14 @@ class ConversationsController extends GetxController {
         currentConversationId = conversation.conversationId;
 
         if (currentConversationId != null) {
-          await SharedPrefsHelper.saveConversationId(currentConversationId!);
+          await SharedPrefsHelper.saveConversationId(currentConversationId!, userID);
         }
         print("Current Conversation ID: $currentConversationId");
 
         // Don't clear messages immediately - let them stay until refresh
-        if (conversation.messages.isNotEmpty) {
+        if (conversation.messages != null && conversation.messages!.isNotEmpty) {
           // Merge server messages with existing local messages
-          _mergeMessages(conversation.messages);
+          _mergeMessages(conversation.messages ?? []);
         }
 
         print('Conversation created with ID: $currentConversationId');
@@ -110,12 +110,14 @@ class ConversationsController extends GetxController {
 
     // 2. Add local messages only if they don't exist in serverMessages
     for (var localMessage in messagesList) {
-      if (localMessage.messageParts.isNotEmpty) {
+      if (localMessage.messageParts != null && localMessage.messageParts!.isNotEmpty) {
         bool existsInServer = serverMessages.any((serverMsg) =>
         serverMsg.actorId == localMessage.actorId &&
-            serverMsg.messageParts.isNotEmpty &&
-            serverMsg.messageParts.first.text.content ==
-                localMessage.messageParts.first.text.content);
+            serverMsg.messageParts != null &&
+            serverMsg.messageParts!.isNotEmpty &&
+            serverMsg.messageParts!.first.text?.content ==
+                localMessage.messageParts!.first.text?.content
+        );
 
         if (!existsInServer) {
           newMessages.add(localMessage);
@@ -132,8 +134,8 @@ class ConversationsController extends GetxController {
     final messagesToSort = messages ?? messagesList;
     messagesToSort.sort((a, b) {
       try {
-        final timeA = DateTime.parse(a.createdTime);
-        final timeB = DateTime.parse(b.createdTime);
+        final timeA = DateTime.parse(a.createdTime ?? '');
+        final timeB = DateTime.parse(b.createdTime ?? '');
         return timeA.compareTo(timeB);
       } catch (e) {
         return 0;
@@ -145,12 +147,15 @@ class ConversationsController extends GetxController {
   void removeFailedLocalMessage(String text, String actorId) {
     messagesList.removeWhere((message) =>
     _pendingLocalMessageIds.contains(message.id) &&
-        message.messageParts.isNotEmpty &&
-        message.messageParts.first.text?.content == text &&
-        message.actorId == actorId);
+        message.messageParts != null &&
+        message.messageParts!.isNotEmpty &&
+        message.messageParts!.first.text?.content == text &&
+        message.actorId == actorId
+    );
 
     _pendingLocalMessageIds.removeWhere((id) =>
-    !messagesList.any((message) => message.id == id));
+    !messagesList.any((message) => message.id == id)
+    );
 
     _safeUpdate();
   }

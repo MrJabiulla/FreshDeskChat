@@ -8,17 +8,17 @@ import '../urls.dart';
 
 class UsersController extends GetxController {
   bool isLoading = false;
-  List<UserModel> usersList = [];
+  List<UserResponseModel> usersList = [];
 
 
   // GET Users by userId
-  Future<void> getUser({required String email}) async {
+  Future<void> getUser({required String userID}) async {
     try {
       isLoading = true;
       update();
 
-      print("Fetching user with email: $email");
-      final url = Uri.parse(FreshchatUrls.getUser(email));
+      print("Fetching user with UserID: $userID");
+      final url = Uri.parse(FreshchatUrls.getUser(userID));
       final response = await http.get(url, headers: ApiHeaders.headers);
       print(url);
       print('Response body: ${response.body}');
@@ -26,11 +26,13 @@ class UsersController extends GetxController {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final usersResponse = UsersResponse.fromJson(data);
-        usersList = usersResponse.users ?? [];
+        final user = UserResponseModel.fromJson(data);
+        usersList = [user]; // Wrap in a list
+        print("------------------------------------");
         print('Users fetched: ${usersList.length}');
         print('First user: ${usersList.isNotEmpty ? usersList.first.firstName : 'No user'}');
-
+        print("User Details: ${user.firstName} ${user.lastName}, Email: ${user.email}");
+        print("------------------------------------");
       } else {
         print('Error: ${response.statusCode} ${response.reasonPhrase}');
       }
@@ -57,7 +59,7 @@ class UsersController extends GetxController {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = json.decode(response.body);
-        final newUser = UserModel.fromJson(data);
+        final newUser = UserResponseModel.fromJson(data);
         usersList.add(newUser);
       } else {
         print('Error: ${response.statusCode} ${response.reasonPhrase}');

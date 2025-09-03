@@ -23,7 +23,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     // RESTORED YOUR ORIGINAL LOGIC EXACTLY AS IT WAS
-    usersController.getUser(email: "alice.john@email.com");
+    // usersController.getUser(userID: "e0b73379-92e4-413b-85bc-81bb15939edc");//oddo
+    // usersController.getUser(userID: "1f8d08c3-02ec-4444-b22b-873c7ad1bc1a"); //Leo
+
+    usersController.getUser(userID: "3a0fc2af-5aae-414d-b6fb-958de2749725"); //warg
     channelsController.fetchChannels().then((_) {
       print("Channels loaded: ${channelsController.channelsList.length}");
       for (var channel in channelsController.channelsList) {
@@ -31,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
         print("Channel ID: ${channel.id}");
         print("Channel Type: ${channel.enabled}");
         if (channelsController.channelsList.isNotEmpty) {
-          channelID = channelsController.channelsList.first.id;
+          channelID = "4a88f741-27bb-42b1-aeca-49bcf2a7ed7a";
         }
       }
     });

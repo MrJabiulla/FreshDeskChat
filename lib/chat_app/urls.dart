@@ -7,7 +7,7 @@ class FreshchatUrls {
   static String get _baseUrl => dotenv.env['FRESHCHAT_BASE_URL'] ?? "";
 
   static String usersUrls = '$_baseUrl/users';
-  static String getUser(String email) => '$_baseUrl/users?email=$email';
+  static String getUser(String userID) => '$_baseUrl/users/$userID';
   static String channelsUrls = '$_baseUrl/channels';
   static String conversationsUrls = '$_baseUrl/conversations';
 

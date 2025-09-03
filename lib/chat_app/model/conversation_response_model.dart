@@ -1,41 +1,39 @@
 class ConversationResponse {
-  final List<Message> messages;
-  final String conversationId;
-  final int conversationInternalId;
-  final String appId;
-  final String status;
-  final String channelId;
-  final String assignedGroupId;
-  final int skillId;
-  final ConversationProperties properties;
-  final String url;
-  final String orgContactId;
-  final String createdTime;
-  final String updatedTime;
-  final String userId;
+  final List<Message>? messages;
+  final String? conversationId;
+  final int? conversationInternalId;
+  final String? appId;
+  final String? status;
+  final String? channelId;
+  final String? assignedGroupId;
+  final int? skillId;
+  final ConversationProperties? properties;
+  final String? url;
+  final String? orgContactId;
+  final String? createdTime;
+  final String? updatedTime;
+  final String? userId;
 
   ConversationResponse({
-    required this.messages,
-    required this.conversationId,
-    required this.conversationInternalId,
-    required this.appId,
-    required this.status,
-    required this.channelId,
-    required this.assignedGroupId,
-    required this.skillId,
-    required this.properties,
-    required this.url,
-    required this.orgContactId,
-    required this.createdTime,
-    required this.updatedTime,
-    required this.userId,
+    this.messages,
+    this.conversationId,
+    this.conversationInternalId,
+    this.appId,
+    this.status,
+    this.channelId,
+    this.assignedGroupId,
+    this.skillId,
+    this.properties,
+    this.url,
+    this.orgContactId,
+    this.createdTime,
+    this.updatedTime,
+    this.userId,
   });
 
   factory ConversationResponse.fromJson(Map<String, dynamic> json) {
     return ConversationResponse(
-      messages: (json['messages'] as List)
-          .map((e) => Message.fromJson(e))
-          .toList(),
+      messages: (json['messages'] as List?)?.map((e) => Message.fromJson(e)).toList(),
       conversationId: json['conversation_id'],
       conversationInternalId: json['conversation_internal_id'],
       appId: json['app_id'],
@@ -43,7 +41,7 @@ class ConversationResponse {
       channelId: json['channel_id'],
       assignedGroupId: json['assigned_group_id'],
       skillId: json['skill_id'],
-      properties: ConversationProperties.fromJson(json['properties']),
+      properties: json['properties'] != null ? ConversationProperties.fromJson(json['properties']) : null,
       url: json['url'],
       orgContactId: json['org_contact_id'],
       createdTime: json['created_time'],
@@ -54,7 +52,7 @@ class ConversationResponse {
 
   Map<String, dynamic> toJson() {
     return {
-      'messages': messages.map((e) => e.toJson()).toList(),
+      'messages': messages?.map((e) => e.toJson()).toList(),
       'conversation_id': conversationId,
       'conversation_internal_id': conversationInternalId,
       'app_id': appId,
@@ -62,7 +60,7 @@ class ConversationResponse {
       'channel_id': channelId,
       'assigned_group_id': assignedGroupId,
       'skill_id': skillId,
-      'properties': properties.toJson(),
+      'properties': properties?.toJson(),
       'url': url,
       'org_contact_id': orgContactId,
       'created_time': createdTime,
@@ -73,49 +71,47 @@ class ConversationResponse {
 }
 
 class Message {
-  final List<MessagePart> messageParts;
-  final String appId;
-  final String actorId;
-  final String orgActorId;
-  final String id;
-  final String channelId;
-  final String conversationId;
-  final String freshchatConversationId;
-  final String freshchatChannelId;
-  final String interactionId;
-  final String messageType;
-  final String actorType;
-  final String createdTime;
-  final String userId;
-  final bool restrictResponse;
-  final bool botsPrivateNote;
-  final bool isBotsInput;
+  final List<MessagePart>? messageParts;
+  final String? appId;
+  final String? actorId;
+  final String? orgActorId;
+  final String? id;
+  final String? channelId;
+  final String? conversationId;
+  final String? freshchatConversationId;
+  final String? freshchatChannelId;
+  final String? interactionId;
+  final String? messageType;
+  final String? actorType;
+  final String? createdTime;
+  final String? userId;
+  final bool? restrictResponse;
+  final bool? botsPrivateNote;
+  final bool? isBotsInput;
 
   Message({
-    required this.messageParts,
-    required this.appId,
-    required this.actorId,
-    required this.orgActorId,
-    required this.id,
-    required this.channelId,
-    required this.conversationId,
-    required this.freshchatConversationId,
-    required this.freshchatChannelId,
-    required this.interactionId,
-    required this.messageType,
-    required this.actorType,
-    required this.createdTime,
-    required this.userId,
-    required this.restrictResponse,
-    required this.botsPrivateNote,
-    required this.isBotsInput,
+    this.messageParts,
+    this.appId,
+    this.actorId,
+    this.orgActorId,
+    this.id,
+    this.channelId,
+    this.conversationId,
+    this.freshchatConversationId,
+    this.freshchatChannelId,
+    this.interactionId,
+    this.messageType,
+    this.actorType,
+    this.createdTime,
+    this.userId,
+    this.restrictResponse,
+    this.botsPrivateNote,
+    this.isBotsInput,
   });
 
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
-      messageParts: (json['message_parts'] as List)
-          .map((e) => MessagePart.fromJson(e))
-          .toList(),
+      messageParts: (json['message_parts'] as List?)?.map((e) => MessagePart.fromJson(e)).toList(),
       appId: json['app_id'],
       actorId: json['actor_id'],
       orgActorId: json['org_actor_id'],
@@ -137,7 +133,7 @@ class Message {
 
   Map<String, dynamic> toJson() {
     return {
-      'message_parts': messageParts.map((e) => e.toJson()).toList(),
+      'message_parts': messageParts?.map((e) => e.toJson()).toList(),
       'app_id': appId,
       'actor_id': actorId,
       'org_actor_id': orgActorId,
@@ -159,23 +155,23 @@ class Message {
 }
 
 class MessagePart {
-  final TextContent text;
+  final TextContent? text;
 
-  MessagePart({required this.text});
+  MessagePart({this.text});
 
   factory MessagePart.fromJson(Map<String, dynamic> json) {
-    return MessagePart(text: TextContent.fromJson(json['text']));
+    return MessagePart(text: json['text'] != null ? TextContent.fromJson(json['text']) : null);
   }
 
   Map<String, dynamic> toJson() => {
-    'text': text.toJson(),
+    'text': text?.toJson(),
   };
 }
 
 class TextContent {
-  final String content;
+  final String? content;
 
-  TextContent({required this.content});
+  TextContent({this.content});
 
   factory TextContent.fromJson(Map<String, dynamic> json) {
     return TextContent(content: json['content']);
@@ -187,12 +183,12 @@ class TextContent {
 }
 
 class ConversationProperties {
-  final String priority;
-  final String cfType;
+  final String? priority;
+  final String? cfType;
 
   ConversationProperties({
-    required this.priority,
-    required this.cfType,
+    this.priority,
+    this.cfType,
   });
 
   factory ConversationProperties.fromJson(Map<String, dynamic> json) {

@@ -7,7 +7,7 @@ import '../params/send_message_params.dart' as sendParams;
 import '../viewmodel/converstion_viewmodel.dart';
 
 class ChatScreen extends StatefulWidget {
-  final UserModel user;
+  final UserResponseModel user;
   final String channelID;
 
   const ChatScreen({
@@ -41,13 +41,13 @@ class _ChatScreenState extends State<ChatScreen> {
 
   // Initialization Methods
   Future<void> _initConversation() async {
-    final savedId = await SharedPrefsHelper.getConversationId();
+    final savedId = await SharedPrefsHelper.getConversationId(widget.user.id ?? "unknown_user");
 
     if (savedId != null && savedId.isNotEmpty) {
       convController.currentConversationId = savedId;
       await _loadConversationMessages();
     } else {
-      print("No saved conversation found.");
+      print("No saved conversation found for user: ${widget.user.id}");
     }
   }
 
@@ -110,11 +110,14 @@ class _ChatScreenState extends State<ChatScreen> {
         cfRating: "3",
         cfSupportedProducts: ["Freshchat", "Freshdesk"],
       ),
-      users: [UserParams(id: widget.user.id ?? "unknown_user")],
+      users: [UserParams(id: widget.user.id)],
     );
 
+    // Print the payload
+    print("Payload: ${conversationParams.toJson()}");
+
     // Create the conversation
-    convController.createConversation(conversationParams.toJson()).then((_) {
+    convController.createConversation(conversationParams.toJson(), widget.user.id).then((_) {
       print("Conversation created successfully");
     }).catchError((error) {
       print("Failed to create conversation: $error");
