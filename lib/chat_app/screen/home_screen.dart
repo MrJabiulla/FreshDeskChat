@@ -23,10 +23,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     // RESTORED YOUR ORIGINAL LOGIC EXACTLY AS IT WAS
-    // usersController.getUser(userID: "e0b73379-92e4-413b-85bc-81bb15939edc");//oddo
+    usersController.getUser(userID: "e0b73379-92e4-413b-85bc-81bb15939edc");//oddo
     // usersController.getUser(userID: "1f8d08c3-02ec-4444-b22b-873c7ad1bc1a"); //Leo
 
-    usersController.getUser(userID: "3a0fc2af-5aae-414d-b6fb-958de2749725"); //warg
+    // usersController.getUser(userID: "3a0fc2af-5aae-414d-b6fb-958de2749725"); //warg
     channelsController.fetchChannels().then((_) {
       print("Channels loaded: ${channelsController.channelsList.length}");
       for (var channel in channelsController.channelsList) {
